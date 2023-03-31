@@ -33,7 +33,7 @@ Nah, Seriously. Very simple library that encapsulates CRUD operations for [Mongo
 To install chux-mongo, run the following command:
 
 ```sh
-go get github.com/csailer/chux-mongo
+go get github.com/csailer/chux-datastore
 ```
 
 ## Usage
@@ -45,7 +45,7 @@ updates, and deletes a document in a `MongoDB` collection.
 First, download `chux-mongo`:
 
 ```shell
-$ go get github.com/csailer/chux-mongo
+$ go get github.com/csailer/chux-datastore
 ```
 
 ```go
