@@ -1,0 +1,6 @@
+inpackage: True
+testonly: True
+with-expecter: True
+keeptree: False
+all: True
+recursive: True
