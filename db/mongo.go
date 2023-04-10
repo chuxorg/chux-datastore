@@ -85,10 +85,10 @@ var _client *mongo.Client
 // Example:
 //
 //	mongoDB := New(
-//		withURI("mongodb://localhost:27017"),
-//		withTimeout(30),
-//		withDatabaseName("test"),
-//		withCollectionName("test"),
+//		WithURI("mongodb://localhost:27017"),
+//		WithTimeout(30),
+//		WithDatabaseName("test"),
+//		WithCollectionName("test"),
 //	)
 func New(options ...func(*MongoDB)) *MongoDB {
 
@@ -104,7 +104,7 @@ func New(options ...func(*MongoDB)) *MongoDB {
 // Example:
 //
 //	mongoDB := New(
-//		withURI("mongodb://localhost:27017"),
+//		WithURI("mongodb://localhost:27017"),
 //	)
 func WithURI(uri string) func(*MongoDB) {
 	return func(s *MongoDB) {

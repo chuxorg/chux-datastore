@@ -6,6 +6,8 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+var mongoDB MongoDB
+
 // TestNew tests the New function of the MongoDB struct
 func TestNew(t *testing.T) {
 	uri := "mongodb://localhost:27017"
@@ -13,7 +15,7 @@ func TestNew(t *testing.T) {
 	databaseName := "test"
 	collectionName := "test"
 
-	mongoDB := New(
+	mongoDB = New(
 		WithURI(uri),
 		WithTimeout(timeout),
 		WithDatabaseName(databaseName),
@@ -25,4 +27,3 @@ func TestNew(t *testing.T) {
 	assert.Equal(t, databaseName, mongoDB.DatabaseName)
 	assert.Equal(t, collectionName, mongoDB.CollectionName)
 }
-
