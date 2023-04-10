@@ -46,7 +46,6 @@ type IMongoDocument interface {
 	GetID() primitive.ObjectID
 }
 
-
 type IMongoClientMethods interface {
 	Connect(ctx context.Context) error
 	Disconnect(ctx context.Context) error
@@ -54,12 +53,12 @@ type IMongoClientMethods interface {
 	Ping(ctx context.Context, rp *readpref.ReadPref) error
 }
 
-//go:generate mockery --name MongoClient 
+//go:generate mockery --name MongoClient
 type IMongoClient interface {
 	IMongoClientMethods
 }
 
-//go:generate mockery --name MongoDB 
+//go:generate mockery --name MongoDB
 type IMongoDB interface {
 	Connect() (*mongo.Client, error)
 	Create(doc IMongoDocument, id string) error
