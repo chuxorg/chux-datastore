@@ -166,7 +166,9 @@ func (m *MongoDB) Connect() (*mongo.Client, error) {
 		// Client has already been created. Return it
 		return _client, nil
 	}
-
+	if m.Timeout == 0 {
+		m.Timeout = 30 // default value
+	}
 	timeoutDuration := time.Duration(m.Timeout) * time.Second
 	if m.Timeout == 0 {
 		timeoutDuration = 30 * time.Second // default value
@@ -220,6 +222,9 @@ func (m *MongoDB) Create(doc IMongoDocument) error {
 		return err
 	}
 	// Create a context with a timeout of 10 seconds
+	if m.Timeout == 0 {
+		m.Timeout = 30 // default value
+	}
 	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(m.Timeout)*time.Second)
 	defer cancel()
 
