@@ -282,52 +282,72 @@ func (m *MongoDB) GetByID(doc IMongoDocument, id string) (interface{}, error) {
 //		fmt.Println(doc)
 //	}
 func (m *MongoDB) Query(doc IMongoDocument, queries ...interface{}) ([]IMongoDocument, error) {
-
+	// Check if the number of arguments is even (key-value pairs)
 	if len(queries)%2 != 0 {
 		return nil, NewChuxMongoError("Query() requires an even number of arguments for key-value pairs.", 1006, nil)
 	}
 
+	// Connect to the MongoDB client
 	client, err := m.Connect()
 	if err != nil {
 		return nil, err
 	}
 
+	// Get the collection from the specified database and collection names
 	collection := client.Database(doc.GetDatabaseName()).Collection(doc.GetCollectionName())
 
+	// Initialize the filter bson.M (a map) for MongoDB filtering
 	filter := bson.M{}
+
+	// Loop through the provided query parameters, in key-value pairs
 	for i := 0; i < len(queries); i += 2 {
+		// Cast the key to a string and check if the casting was successful
 		key, ok := queries[i].(string)
 		if !ok {
 			return nil, NewChuxMongoError("Query() expects keys to be of type string.", 1006, nil)
 		}
+		// Add the key-value pair to the filter map
 		filter[key] = queries[i+1]
 	}
 
+	// Execute the Find operation on the collection with the filter
 	cursor, err := collection.Find(context.Background(), filter)
 	if err != nil {
 		return nil, NewChuxMongoError("Query() Failed to find documents. Check the inner error.", 1006, err)
 	}
 
+	// Close the cursor when the function is done
 	defer cursor.Close(context.Background())
 
+	// Initialize a slice to store the decoded documents
 	var docs []IMongoDocument
+
+	// Loop through the cursor while there are more documents to fetch
 	for cursor.Next(context.Background()) {
+		// Create a new document instance based on the type of the provided doc
 		newDoc := reflect.New(reflect.TypeOf(doc).Elem()).Interface().(IMongoDocument)
+
+		// Decode the document from the cursor into the new document instance
 		err := cursor.Decode(newDoc)
 		if err != nil {
 			return nil, NewChuxMongoError("Query() Failed to decode document. Check the inner error.", 1006, err)
 		}
+
+		// Append the new document to the docs slice
 		docs = append(docs, newDoc)
 	}
 
+	// Check for errors in the cursor
 	if err := cursor.Err(); err != nil {
 		return nil, NewChuxMongoError("Query() Cursor error. Check the inner error.", 1006, err)
 	}
 
+	// If no documents were found, return an error
 	if len(docs) == 0 {
 		return nil, NewChuxMongoError("No documents found.", 1006, nil)
 	}
 
+	// Return the documents slice and a nil error
 	return docs, nil
 }
 
