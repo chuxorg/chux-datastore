@@ -270,6 +270,67 @@ func (m *MongoDB) GetByID(doc IMongoDocument, id string) (interface{}, error) {
 	return doc, nil
 }
 
+// Query allows for variadic parameters to query any field with any value of any type from MongoDB
+// Example:
+//
+//	mongoDB := New()
+//	docs, err := mongoDB.Query(&MyMongoDocument{}, "firstName", "John", "lastName", "Doe")
+//	if err != nil {
+//		return err
+//	}
+//	for _, doc := range docs {
+//		fmt.Println(doc)
+//	}
+func (m *MongoDB) Query(doc IMongoDocument, queries ...interface{}) ([]IMongoDocument, error) {
+
+	if len(queries)%2 != 0 {
+		return nil, NewChuxMongoError("Query() requires an even number of arguments for key-value pairs.", 1006, nil)
+	}
+
+	client, err := m.Connect()
+	if err != nil {
+		return nil, err
+	}
+
+	collection := client.Database(doc.GetDatabaseName()).Collection(doc.GetCollectionName())
+
+	filter := bson.M{}
+	for i := 0; i < len(queries); i += 2 {
+		key, ok := queries[i].(string)
+		if !ok {
+			return nil, NewChuxMongoError("Query() expects keys to be of type string.", 1006, nil)
+		}
+		filter[key] = queries[i+1]
+	}
+
+	cursor, err := collection.Find(context.Background(), filter)
+	if err != nil {
+		return nil, NewChuxMongoError("Query() Failed to find documents. Check the inner error.", 1006, err)
+	}
+
+	defer cursor.Close(context.Background())
+
+	var docs []IMongoDocument
+	for cursor.Next(context.Background()) {
+		newDoc := reflect.New(reflect.TypeOf(doc).Elem()).Interface().(IMongoDocument)
+		err := cursor.Decode(newDoc)
+		if err != nil {
+			return nil, NewChuxMongoError("Query() Failed to decode document. Check the inner error.", 1006, err)
+		}
+		docs = append(docs, newDoc)
+	}
+
+	if err := cursor.Err(); err != nil {
+		return nil, NewChuxMongoError("Query() Cursor error. Check the inner error.", 1006, err)
+	}
+
+	if len(docs) == 0 {
+		return nil, NewChuxMongoError("No documents found.", 1006, nil)
+	}
+
+	return docs, nil
+}
+
 // Returns all Mongo Documents from the configured Mongo DB
 // Example:
 //
