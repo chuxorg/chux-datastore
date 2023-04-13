@@ -316,8 +316,9 @@ func (m *MongoDB) Query(doc IMongoDocument, queries ...interface{}) ([]IMongoDoc
 	// Execute the Find operation on the collection with the filter
 	cursor, err := collection.Find(context.Background(), filter)
 	if err != nil {
-
+		// The query returned no results
 		return emptySlice, nil
+	}
 
 	// Close the cursor when the function is done
 	defer cursor.Close(context.Background())
