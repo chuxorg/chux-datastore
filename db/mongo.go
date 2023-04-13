@@ -282,6 +282,9 @@ func (m *MongoDB) GetByID(doc IMongoDocument, id string) (interface{}, error) {
 //		fmt.Println(doc)
 //	}
 func (m *MongoDB) Query(doc IMongoDocument, queries ...interface{}) ([]IMongoDocument, error) {
+
+	// prepare an empty slice to return in case there are no results
+	emptySlice := make([]IMongoDocument, 0)
 	// Check if the number of arguments is even (key-value pairs)
 	if len(queries)%2 != 0 {
 		return nil, NewChuxMongoError("Query() requires an even number of arguments for key-value pairs.", 1006, nil)
@@ -290,7 +293,7 @@ func (m *MongoDB) Query(doc IMongoDocument, queries ...interface{}) ([]IMongoDoc
 	// Connect to the MongoDB client
 	client, err := m.Connect()
 	if err != nil {
-		return nil, err
+		return nil, NewChuxMongoError("Query() error occurred connecting to Mongo", 1006, err)
 	}
 
 	// Get the collection from the specified database and collection names
@@ -313,8 +316,8 @@ func (m *MongoDB) Query(doc IMongoDocument, queries ...interface{}) ([]IMongoDoc
 	// Execute the Find operation on the collection with the filter
 	cursor, err := collection.Find(context.Background(), filter)
 	if err != nil {
-		return nil, NewChuxMongoError("Query() Failed to find documents. Check the inner error.", 1006, err)
-	}
+
+		return emptySlice, nil
 
 	// Close the cursor when the function is done
 	defer cursor.Close(context.Background())
@@ -344,7 +347,7 @@ func (m *MongoDB) Query(doc IMongoDocument, queries ...interface{}) ([]IMongoDoc
 
 	// If no documents were found, return an error
 	if len(docs) == 0 {
-		return nil, NewChuxMongoError("No documents found.", 1006, nil)
+		return emptySlice, nil
 	}
 
 	// Return the documents slice and a nil error

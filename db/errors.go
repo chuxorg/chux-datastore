@@ -15,9 +15,9 @@ func NewChuxMongoError(message string, code int, innerError error) *ChuxMongoErr
 	err := ChuxMongoError{
 		Code:       code,
 		InnerError: innerError,
+		Message:    message,
 	}
 
-	err.Message = err.Error()
 	return &err
 }
 
