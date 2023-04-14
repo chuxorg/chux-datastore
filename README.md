@@ -1,6 +1,6 @@
 [![Build and Test](https://github.com/csailer/chux-datastore/actions/workflows/build_and_test.yml/badge.svg?branch=master)](https://github.com/csailer/chux-datastore/actions/workflows/build_and_test.yml)
 [![Go Report Card](https://goreportcard.com/badge/github.com/csailer/chux-mongo)](https://goreportcard.com/report/github.com/csailer/chux-mongo)
-# Chux MongoDB Go Library - chux-mongo
+# Chux Datastore Go Library - chux-datastore
 
 chux-datastore is a simple and easy-to-use Go library for performing basic CRUD operations on MongoDB. The library provides a clean and straightforward interface for connecting to MongoDB, as well as creating, retrieving, updating, and deleting documents.
 
@@ -16,7 +16,7 @@ And what of the days yet to come? Shall this valiant library withstand the sands
 
 In closing, chux-mongo emerges as the mythical hero we never knew we yearned for, restoring harmony to the pandemonium, severing the chains of monotony, and banishing the specter of boilerplate Mongo code to the annals of distant memory. 
 
-The Repo is Dark and Full of Terrors.
+The Repos are Dark and Full of Terrors.
 
 Nah, Seriously. Very simple library that encapsulates CRUD operations for [Mongo DB](https://www.mongodb.com) with Golang >= 1.19.
 ## Features
@@ -30,10 +30,10 @@ Nah, Seriously. Very simple library that encapsulates CRUD operations for [Mongo
 - MongoDB server
 - Installation
 
-To install chux-mongo, run the following command:
+To install chux-datastore, run the following command:
 
 ```sh
-go get github.com/csailer/chux-datastore
+go get github.com/chuxorg/chux-datastore
 ```
 
 ## Usage
@@ -45,7 +45,7 @@ updates, and deletes a document in a `MongoDB` collection.
 First, download `chux-mongo`:
 
 ```shell
-$ go get github.com/csailer/chux-datastore
+$ go get github.com/chuxorg/chux-datastore
 ```
 
 ```go
@@ -55,7 +55,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/csailer/chux-mongo/db"
+	"github.com/chuxorg/chux-datastore/db"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
@@ -178,7 +178,7 @@ Contributions are welcome! Please feel free to submit issues and pull requests.
 
 ## Projects Using this Library
 
-- [chux-bizobj](github.com/csailer/chux-mongo)
+- [chux-models](github.com/chuxorg/chux-models)
 
 ## License
 chux-mongo is released under the [GNU General Public License v3](https://www.gnu.org/licenses/gpl-3.0.en.html)
