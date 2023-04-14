@@ -1,5 +1,5 @@
-[![Build and Test](https://github.com/csailer/chux-datastore/actions/workflows/build_and_test.yml/badge.svg?branch=master)](https://github.com/csailer/chux-datastore/actions/workflows/build_and_test.yml)
-[![Go Report Card](https://goreportcard.com/badge/github.com/csailer/chux-mongo)](https://goreportcard.com/report/github.com/csailer/chux-mongo)
+[![Build and Test](https://github.com/csailer/chux-datastore/actions/workflows/build_and_test.yml/badge.svg?branch=master)](https://github.com/chuxorg/chux-datastore/actions/workflows/build_and_test.yml)
+[![Go Report Card](https://goreportcard.com/badge/github.com/chuxorg/chux-datastore)](https://goreportcard.com/report/github.com/chuxorg/chux-datastore)
 # Chux Datastore Go Library - chux-datastore
 
 chux-datastore is a simple and easy-to-use Go library for performing basic CRUD operations on MongoDB. The library provides a clean and straightforward interface for connecting to MongoDB, as well as creating, retrieving, updating, and deleting documents.
