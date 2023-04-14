@@ -1,5 +1,4 @@
 [![Build and Test](https://github.com/csailer/chux-datastore/actions/workflows/build_and_test.yml/badge.svg?branch=master)](https://github.com/csailer/chux-datastore/actions/workflows/build_and_test.yml)
-[![SLSA](https://github.com/chuxorg/chux-datastore/actions/workflows/generator-generic-ossf-slsa3-publish.yml/badge.svg)](https://github.com/chuxorg/chux-datastore/actions/workflows/generator-generic-ossf-slsa3-publish.yml)
 [![Go Report Card](https://goreportcard.com/badge/github.com/csailer/chux-mongo)](https://goreportcard.com/report/github.com/csailer/chux-mongo)
 # Chux MongoDB Go Library - chux-mongo
 
