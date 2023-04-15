@@ -8,6 +8,7 @@ import (
 	"reflect"
 	"time"
 
+	"github.com/chuxorg/chux-datastore/errors"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -44,6 +45,7 @@ type IMongoDocument interface {
 	GetDatabaseName() string
 	GetURI() string
 	GetID() primitive.ObjectID
+	
 }
 
 type IMongoClientMethods interface {
@@ -66,6 +68,7 @@ type IMongoDB interface {
 	GetByID(doc IMongoDocument, id string) error
 	GetAll(doc IMongoDocument) ([]IMongoDocument, error)
 	Update(doc IMongoDocument, id string) error
+	CreateIndicies(fieldNames ...interface{}) (bool, error)
 }
 
 // The MongoDB struct is used to store the MongoDB configuration
@@ -515,4 +518,33 @@ func (m *MongoDB) getCollection(doc IMongoDocument) (*mongo.Collection, error) {
 		return nil, NewChuxMongoError(fmt.Sprintf("Unable to get the collection: %s from database: %s Check the inner error for details", collectionName, dbName), 1000, nil)
 	}
 	return collection, nil
+}
+
+func (m *MongoDB) CreateIndices(doc IMongoDocument, fieldNames ...string) (bool, error) {
+	client, err := m.Connect()
+	if err != nil {
+		return false, err
+	}
+	collectionName, dbName, err := m.getDBAndCollectionName(doc)
+	if err != nil {
+		return false, errors.NewChuxDataStoreError("Unable to get the collection name and database name from the IMongoDocument interface. Check the inner error for details", err)
+	}
+	collection := client.Database(dbName).Collection(collectionName)
+	if collection == nil {
+		return false, NewChuxMongoError(fmt.Sprintf("Unable to get the collection: %s from database: %s Check the inner error for details", collectionName, dbName), 1000, nil)
+	}
+	for _, fieldName := range fieldNames {
+		indexView := collection.Indexes()
+		indexModel := mongo.IndexModel{
+			Keys: bson.M{
+				fieldName: 1,
+			},
+			Options: options.Index().SetUnique(true),
+		}
+		_, err := indexView.CreateOne(context.Background(), indexModel)
+		if err != nil {
+			return false, NewChuxMongoError(fmt.Sprintf("Unable to create the indicies: %s on collection: %s Check the inner error for details", fieldNames, collectionName), 1000, nil)
+		}
+	}
+	return true, nil
 }

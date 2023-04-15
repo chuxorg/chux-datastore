@@ -1,0 +1,14 @@
+logging:
+  level: info
+  filePath: "../logs"
+DataStores:
+  - dataStore:
+      mongo:
+        uri: mongodb://localhost:27017
+        timeout: 10
+        databaseName: chux-cprs
+        collectionName: ""
+      redis:
+        uri: redis://:password@localhost:6379
+        
+        
