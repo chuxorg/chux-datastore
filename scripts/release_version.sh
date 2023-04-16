@@ -13,9 +13,8 @@ if [ -z "$MAJOR_VALUE" ] && [ -z "$MINOR_VALUE" ]; then
   NEW_PATCH=$((PATCH + 1))
 fi
 
-git config --global user.email "chuck@chucksailer.com"
-git config --global user.name "csailer"
 NEW_VERSION="$NEW_MAJOR.$NEW_MINOR.$NEW_PATCH"
+
 git add .
 git commit -m "Release Version: $NEW_VERSION"
 git tag $NEW_VERSION
