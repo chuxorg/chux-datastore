@@ -15,7 +15,7 @@ fi
 
 git config --global user.email "chuck@chucksailer.com"
 git config --global user.name "csailer"
-NEW_VERSION="v$NEW_MAJOR.$NEW_MINOR.$NEW_PATCH"
+NEW_VERSION="$NEW_MAJOR.$NEW_MINOR.$NEW_PATCH"
 git add .
 git commit -m "Release Version: $NEW_VERSION"
 git tag $NEW_VERSION
