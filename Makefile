@@ -14,6 +14,7 @@ changelog:
 	chmod +x ./scripts/changelog.sh
 	./scripts/changelog.sh
 
+.PHONY: reset-tags
 reset-tags:
 	git tag -l | xargs git tag -d
 	git fetch --tags
