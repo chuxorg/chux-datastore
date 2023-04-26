@@ -79,6 +79,7 @@ type MongoDB struct {
 	URI            string
 	Timeout        float64
 	_client        IMongoClient
+	Logger         *logging.Logger
 }
 
 // The _client variable is used to store the MongoDB client
@@ -94,12 +95,20 @@ var _client *mongo.Client
 //		WithCollectionName("test"),
 //	)
 func New(options ...func(*MongoDB)) *MongoDB {
-	logging.Debug("New() Creating new MongoDB Struct")
+
 	mdb := &MongoDB{}
 	for _, o := range options {
 		o(mdb)
 	}
+
 	return mdb
+}
+
+func WithLogger(logger logging.Logger) func(*MongoDB) {
+
+	return func(s *MongoDB) {
+		s.Logger = &logger
+	}
 }
 
 // WithURI is a functional option that sets the MongoDB URI.
