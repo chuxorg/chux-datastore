@@ -119,7 +119,7 @@ func WithLogger(logger logging.Logger) func(*MongoDB) {
 //		WithURI("mongodb://localhost:27017"),
 //	)
 func WithURI(uri string) func(*MongoDB) {
-	logging.Debug("WithURI() Creating new MongoDB Struct with a URI")
+
 	return func(s *MongoDB) {
 		s.URI = uri
 	}
@@ -133,10 +133,9 @@ func WithURI(uri string) func(*MongoDB) {
 //		withTimeout(30),
 //	)
 func WithTimeout(timeout float64) func(*MongoDB) {
-	logging.Debug("New() Creating new MongoDB Struct with a Timeout")
+
 	return func(s *MongoDB) {
 		if timeout == 0 {
-			logging.Info("WithTimeOut() Setting MongoDB Timeout to default value of 30 seconds")
 			timeout = 30
 		}
 		s.Timeout = timeout
@@ -150,7 +149,7 @@ func WithTimeout(timeout float64) func(*MongoDB) {
 //		withDatabaseName("test"),
 //	)
 func WithDatabaseName(databaseName string) func(*MongoDB) {
-	logging.Info("WithDatabaseName() Creating MongoDB with a Database Name '%s'", databaseName)
+
 	return func(s *MongoDB) {
 		s.DatabaseName = databaseName
 	}
@@ -163,7 +162,7 @@ func WithDatabaseName(databaseName string) func(*MongoDB) {
 //		withCollectionName("test"),
 //	)
 func WithCollectionName(collectionName string) func(*MongoDB) {
-	logging.Info("WithCollectionName() Creating MongoDB with a Collection Name '%s'", collectionName)
+
 	return func(s *MongoDB) {
 		s.CollectionName = collectionName
 	}
@@ -171,7 +170,7 @@ func WithCollectionName(collectionName string) func(*MongoDB) {
 
 // The GetID() method is used to return the ID of the MongoDB struct.
 func (m *MongoDB) GetID() primitive.ObjectID {
-	logging.Debug("MongoDB.GetID() Getting MongoDB ID '%s'", m.ID)
+	m.Logger.Debug("MongoDB.GetID() Getting MongoDB ID '%s'", m.ID)
 	return m.ID
 }
 
@@ -183,6 +182,7 @@ func (m *MongoDB) GetID() primitive.ObjectID {
 //		return err
 //	}
 func (m *MongoDB) Connect() (*mongo.Client, error) {
+	logging := m.Logger
 	logging.Debug("MongoDB.Connect() Connecting to MongoDB")
 	if _client != nil {
 		// Client has already been created. Return it
@@ -205,11 +205,7 @@ func (m *MongoDB) Connect() (*mongo.Client, error) {
 		logging.Debug("MongoDB.Connect() URI is not set. Using default mongodb://localhost:27017")
 		uri = "mongodb://localhost:27017"
 	} else {
-		masked, err := logging.MaskUri(m.URI)
-		if err != nil {
-			msg := fmt.Sprintf("Did not mask uri %s. Check the inner error for details", masked)
-			return nil, errors.NewChuxDataStoreError(msg, 1000, err)
-		}
+		masked := fmt.Sprintf(m.URI, "*****", "*****")
 		logging.Debug("MongoDB.Connect() URI is set. Using: '%s'", masked)
 		// Set the uri to the value passed in
 		uri = m.URI
@@ -223,11 +219,7 @@ func (m *MongoDB) Connect() (*mongo.Client, error) {
 
 	_client, err = mongo.NewClient(clientOptions)
 	if err != nil {
-		uri, err = logging.MaskUri(m.URI)
-		if err != nil {
-			msg := fmt.Sprintf("MongoDB.Connect() Did not mask uri. Check the inner error for details")
-			return nil, errors.NewChuxDataStoreError(msg, 1000, err)
-		}
+		uri := fmt.Sprintf(m.URI, "*****", "*****")
 		msg := fmt.Sprintf("MongoDB.Connect() Did not create mongo client for %s. Check the inner error for details", uri)
 		logging.Error(msg)
 		return nil, errors.NewChuxDataStoreError(msg, 1000, err)
@@ -238,7 +230,7 @@ func (m *MongoDB) Connect() (*mongo.Client, error) {
 
 	err = _client.Connect(ctx)
 	if err != nil {
-		uri, _ := logging.MaskUri(m.URI)
+		uri := fmt.Sprintf(m.URI, "*****", "*****")
 		msg := fmt.Sprintf("MongoDB.Connect() Did not connect to mongo client %s. Check the inner error for details", uri)
 		logging.Error(msg, err)
 		return nil, errors.NewChuxDataStoreError(msg, 1001, err)
@@ -271,7 +263,7 @@ func (m *MongoDB) Connect() (*mongo.Client, error) {
 //			LastName:  "Doe",
 //		})
 func (m *MongoDB) Upsert(doc IMongoDocument) error {
-
+	logging := m.Logger
 	// Get the collection and insert the document
 	collection, err := m.getCollection(doc)
 	if err != nil {
@@ -321,7 +313,7 @@ func (m *MongoDB) Upsert(doc IMongoDocument) error {
 
 // Returns a Mongo Document by its ID from the configured Mongo DB
 func (m *MongoDB) GetByID(doc IMongoDocument, id string) (interface{}, error) {
-
+	logging := m.Logger
 	logging.Debug("MongoDB.GetByID() Connecting to Mongo")
 
 	client, err := m.Connect()
@@ -364,7 +356,7 @@ func (m *MongoDB) GetByID(doc IMongoDocument, id string) (interface{}, error) {
 //		fmt.Println(doc)
 //	}
 func (m *MongoDB) Query(doc IMongoDocument, queries ...interface{}) ([]IMongoDocument, error) {
-
+	logging := m.Logger
 	logging.Debug("MongoDB.Query() Connecting to Mongo")
 
 	// prepare an empty slice to return in case there are no results
@@ -458,7 +450,7 @@ func (m *MongoDB) Query(doc IMongoDocument, queries ...interface{}) ([]IMongoDoc
 //		fmt.Println(doc)
 //	}
 func (m *MongoDB) GetAll(doc IMongoDocument) ([]IMongoDocument, error) {
-
+	logging := m.Logger
 	logging.Debug("MongoDB.GetAll() Connecting to Mongo")
 	client, err := m.Connect()
 	if err != nil {
@@ -512,7 +504,7 @@ func (m *MongoDB) GetAll(doc IMongoDocument) ([]IMongoDocument, error) {
 //		LastName:  "Doe",
 //	}, "5e9b9b9b9b9b9b9b9b9b9b9b")
 func (m *MongoDB) Update(doc IMongoDocument, id string) error {
-
+	logging := m.Logger
 	logging.Debug("MongoDB.Update() Connecting to Mongo")
 
 	client, err := m.Connect()
@@ -554,7 +546,7 @@ func (m *MongoDB) Update(doc IMongoDocument, id string) error {
 //		LastName:  "Doe",
 //	}, "5e9b9b9b9b9b9b9b9b9b9b9b")
 func (m *MongoDB) Delete(doc IMongoDocument, id string) error {
-
+	logging := m.Logger
 	logging.Debug("MongoDB.Delete() Connecting to Mongo")
 
 	collection, err := m.getCollection(doc)
@@ -582,6 +574,7 @@ func (m *MongoDB) Delete(doc IMongoDocument, id string) error {
 // Returns a collection and db name from the IMongoDocument interface
 // or the configured values if the interface is not implemented
 func (m *MongoDB) getDBAndCollectionName(doc IMongoDocument) (string, string, error) {
+	logging := m.Logger
 	// Using the IMongoDocument interface, get the collection and database name. When the interface is implemented
 	// the struct that implements it will have the option of overriding the configured collection and database name
 	// with their implementation of the interface methods. This allows for a single struct to be used for multiple collections
@@ -610,7 +603,7 @@ func (m *MongoDB) getDBAndCollectionName(doc IMongoDocument) (string, string, er
 
 // Returns the MongoDB collection from the IMongoDocument interface
 func (m *MongoDB) getCollection(doc IMongoDocument) (*mongo.Collection, error) {
-
+	logging := m.Logger
 	logging.Debug("MongoDB.getCollection() Connecting to Mongo")
 	client, err := m.Connect()
 	if err != nil {
@@ -631,7 +624,7 @@ func (m *MongoDB) getCollection(doc IMongoDocument) (*mongo.Collection, error) {
 }
 
 func (m *MongoDB) CreateIndices(doc IMongoDocument, fieldNames ...string) (bool, error) {
-
+	logging := m.Logger
 	logging.Debug("MongoDB.CreateIndices() Connecting to Mongo")
 
 	client, err := m.Connect()
