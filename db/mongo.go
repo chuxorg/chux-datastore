@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"reflect"
+	"strings"
 	"time"
 
 	"github.com/chuxorg/chux-datastore/errors"
@@ -680,6 +681,7 @@ func (m *MongoDB) CreateIndices(doc IMongoDocument, fieldNames ...string) (bool,
 }
 
 // Returns the value of a field in a document using reflection
+// GetFieldValue method receives a field name and returns its value.
 func (m *MongoDB) GetFieldValue(doc IMongoDocument, field string) (interface{}, error) {
     // Get the value of the document structure
     val := reflect.ValueOf(doc)
@@ -689,12 +691,24 @@ func (m *MongoDB) GetFieldValue(doc IMongoDocument, field string) (interface{}, 
         val = val.Elem()
     }
 
-    // Check if the field exists in the document structure
-    fieldValue := val.FieldByName(field)
-    if !fieldValue.IsValid() {
-        return nil, fmt.Errorf("unknown field: %s", field)
+    // Get the type of the document structure
+    typ := val.Type()
+
+    // Find the struct field that has a bson tag matching the provided field name
+    for i := 0; i < typ.NumField(); i++ {
+        bsonTag := typ.Field(i).Tag.Get("bson")
+        if strings.Split(bsonTag, ",")[0] == field {
+            // Get the field value
+            fieldValue := val.Field(i)
+            if !fieldValue.IsValid() {
+                return nil, fmt.Errorf("unknown field: %s", field)
+            }
+
+            // Return the field value as an interface
+            return fieldValue.Interface(), nil
+        }
     }
 
-    // Return the field value as an interface
-    return fieldValue.Interface(), nil
+    // Return an error if no matching field is found
+    return nil, fmt.Errorf("unknown field: %s", field)
 }
