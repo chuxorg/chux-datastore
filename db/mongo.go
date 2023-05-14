@@ -265,51 +265,77 @@ func (m *MongoDB) Connect() (*mongo.Client, error) {
 //		})
 // Add the 'fields' variadic parameter
 func (m *MongoDB) Upsert(doc IMongoDocument, filterFields ...string) error {
-    
+
 	logging := m.Logger
-    
+
 	// Get the collection and insert the document
-    collection, err := m.getCollection(doc)
-    if err != nil {
+	collection, err := m.getCollection(doc)
+	if err != nil {
 		msg := "MongoDB.Connect() Did not get mongo collection. Check the inner error for details."
-        logging.Error(msg, err)
-        return errors.NewChuxDataStoreError(msg, 1000, err)
-    }
+		logging.Error(msg, err)
+		return errors.NewChuxDataStoreError(msg, 1000, err)
+	}
 
-    // Create a context with a timeout of 30 seconds by default
-    if m.Timeout == 0 {
-        m.Timeout = 30 // default value
-    }
-    ctx, cancel := context.WithTimeout(context.Background(), time.Duration(m.Timeout)*time.Second)
-    logging.Debug("MongoDB.Upsert() Upserting document with timeout of %d seconds", m.Timeout)
-    defer cancel()
+	// Create a context with a timeout of 30 seconds by default
+	if m.Timeout == 0 {
+		m.Timeout = 30 // default value
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(m.Timeout)*time.Second)
+	logging.Debug("MongoDB.Upsert() Upserting document with timeout of %d seconds", m.Timeout)
+	defer cancel()
 
-    // Get the document ID
-    id := doc.GetID()
+	// Get the document ID
+	id := doc.GetID()
 
-    // If the document doesn't have an ID, create a new ObjectID and set it as the document's ID
-    if id == primitive.NilObjectID {
-        id = primitive.NewObjectID()
-        doc.SetID(id)
-    }
+	// Build the filter using the provided fields
+	filter := bson.M{}
+	if len(filterFields) == 0 {
+		// If no fields are provided, use the default "_id" field
+		filter["_id"] = id
+	} else {
+		// Use the provided fields to build the filter
+		for _, field := range filterFields {
+			fieldValue, err := m.GetFieldValue(doc, field)
+			if err != nil {
+				msg := fmt.Sprintf("MongoDB.Upsert() Error getting field value for field '%s': %s", field, err)
+				logging.Error(msg, err)
+				return errors.NewChuxDataStoreError(msg, 1003, err)
+			}
+			filter[field] = fieldValue
+		}
+	}
 
-    // Build the filter using the provided fields
-    filter := bson.M{}
-    if len(filterFields) == 0 {
-        // If no fields are provided, use the default "_id" field
-        filter["_id"] = id
-    } else {
-        // Use the provided fields to build the filter
-        for _, field := range filterFields {
-            fieldValue, err := m.GetFieldValue(doc, field)
-            if err != nil {
-                msg := fmt.Sprintf("MongoDB.Upsert() Error getting field value for field '%s': %s", field, err)
-                logging.Error(msg, err)
-                return errors.NewChuxDataStoreError(msg, 1003, err)
-            }
-            filter[field] = fieldValue
-        }
-    }
+	// Check if document exists
+	var result bson.M
+	err = collection.FindOne(ctx, filter).Decode(&result)
+	if err != nil && err != mongo.ErrNoDocuments {
+		msg := fmt.Sprintf("MongoDB.Upsert() Error checking if document exists: %s", err)
+		logging.Error(msg, err)
+		return errors.NewChuxDataStoreError(msg, 1004, err)
+	}
+
+	// If the document doesn't exist in collection and doesn't have an ID, create a new ObjectID and set it as the document's ID
+	if err == mongo.ErrNoDocuments && id == primitive.NilObjectID {
+		id = primitive.NewObjectID()
+		doc.SetID(id)
+	}
+
+	// Upsert operation
+	_, err = collection.UpdateOne(
+		ctx,
+		filter,
+		bson.M{"$set": doc},
+		options.Update().SetUpsert(true),
+	)
+	if err != nil {
+		msg := fmt.Sprintf("MongoDB.Upsert() Error upserting document: %s", err)
+		logging.Error(msg, err)
+		return errors.NewChuxDataStoreError(msg, 1005, err)
+	}
+
+	return nil
+}
+
 
     // Upsert the document
     update := bson.M{"$set": doc}
